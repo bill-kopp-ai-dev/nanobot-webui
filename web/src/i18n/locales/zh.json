@@ -85,6 +85,19 @@
   "channels": {
     "title": "通道",
     "name": "通道名称",
+    "names": {
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "discord": "Discord",
+      "feishu": "飞书",
+      "dingtalk": "钉钉",
+      "email": "邮件",
+      "slack": "Slack",
+      "qq": "QQ",
+      "matrix": "Matrix",
+      "mochat": "企业微信 (MoChat)",
+      "web": "网页"
+    },
     "status": "状态",
     "enabled": "已启用",
     "disabled": "已禁用",

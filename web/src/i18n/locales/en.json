@@ -8,7 +8,7 @@
     "skills": "Skills",
     "tools": "Tools",
     "cron": "Cron Jobs",
-    "settings": "Agent Settings",
+    "settings": "Agents",
     "systemConfig": "System Config",
     "users": "Users",
     "section": {
@@ -85,6 +85,19 @@
   "channels": {
     "title": "Channels",
     "name": "Channel",
+    "names": {
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "discord": "Discord",
+      "feishu": "Feishu (Lark)",
+      "dingtalk": "DingTalk",
+      "email": "Email",
+      "slack": "Slack",
+      "qq": "QQ",
+      "matrix": "Matrix",
+      "mochat": "WeCom (MoChat)",
+      "web": "Web"
+    },
     "status": "Status",    "enabled": "Enabled",
     "disabled": "Disabled",    "running": "Running",
     "stopped": "Stopped",

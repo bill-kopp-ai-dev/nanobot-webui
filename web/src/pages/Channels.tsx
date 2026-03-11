@@ -109,7 +109,7 @@ export default function Channels() {
                   >
                     <span className="text-xl leading-none">{icon}</span>
                     <div className="flex-1 min-w-0">
-                      <span className="font-medium capitalize">{ch.name}</span>
+                      <span className="font-medium">{t(`channels.names.${ch.name}`, { defaultValue: ch.name })}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <StatusBadge running={ch.running} error={ch.error} />

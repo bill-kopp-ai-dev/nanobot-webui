@@ -129,7 +129,7 @@ export default function Dashboard() {
                   >
                     {/* Header row */}
                     <div className="flex items-start justify-between gap-2">
-                      <span className="font-mono text-sm font-semibold leading-tight break-all">{ch.name}</span>
+                      <span className="font-mono text-sm font-semibold leading-tight break-all">{t(`channels.names.${ch.name}`, { defaultValue: ch.name })}</span>
                       {hasError ? (
                         <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                       ) : isRunning ? (

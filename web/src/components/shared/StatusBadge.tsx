@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";
 
@@ -8,10 +9,11 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ running, error, className }: StatusBadgeProps) {
+  const { t } = useTranslation();
   if (error) {
     return (
       <Badge variant="destructive" className={cn(className)}>
-        Error
+        {t("channels.error")}
       </Badge>
     );
   }
@@ -23,7 +25,7 @@ export function StatusBadge({ running, error, className }: StatusBadgeProps) {
         className
       )}
     >
-      {running ? "Running" : "Stopped"}
+      {running ? t("channels.running") : t("channels.stopped")}
     </Badge>
   );
 }
