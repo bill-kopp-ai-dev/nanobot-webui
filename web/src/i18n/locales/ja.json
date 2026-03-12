@@ -68,6 +68,8 @@
     "disconnected": "未接続",
     "hint": "Enterで送信 · Shift+Enterで改行",
     "uploadAttachment": "ファイルをアップロード",
+    "showToolMessages": "ツール呼び出しを表示",
+    "hideToolMessages": "ツール呼び出しを非表示",
     "uploading": "アップロード中...",
     "uploadFailed": "アップロードに失敗しました"
   },
