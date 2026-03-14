@@ -108,7 +108,7 @@ function RawConfigEditor() {
               {t("sysconfig.jsonError")}
             </span>
           )}
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5" onClick={() => refetch()}>
+          <Button variant="ghost" size="sm" className="h-8 gap-1.5" onClick={() => { setContent(null); setDirty(false); setJsonError(null); refetch(); }}>
             <RefreshCw className="h-3.5 w-3.5" />
             {t("common.refresh")}
           </Button>

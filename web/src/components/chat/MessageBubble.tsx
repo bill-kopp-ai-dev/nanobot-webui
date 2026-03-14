@@ -289,23 +289,23 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
       {/* Content */}
       <div className={cn(
-        "flex max-w-[78%] flex-col gap-1",
+        "flex min-w-0 max-w-[92%] flex-col gap-1",
         isUser ? "items-end" : "items-start"
       )}>
         {isUser ? (
           <div className="rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm leading-relaxed text-primary-foreground shadow-sm">
-            <span className="whitespace-pre-wrap">{message.content}</span>
+            <span className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.content}</span>
           </div>
         ) : (
-          <div className="w-full space-y-2">
+          <div className="w-full min-w-0 space-y-2 [overflow-wrap:anywhere]">
             {parts.map((part, i) =>
               part.type === "thinking" ? (
                 <ThinkingBlock key={i} content={part.content} />
               ) : part.content.trim() ? (
                 <div key={i} className={cn(
-                  "prose prose-sm max-w-none dark:prose-invert",
-                  "[&_p]:leading-relaxed [&_p]:my-1",
-                  "[&_pre]:rounded-xl [&_pre]:bg-zinc-100 dark:[&_pre]:bg-zinc-900 [&_pre]:text-zinc-900 dark:[&_pre]:text-zinc-100 [&_pre]:p-4 [&_pre]:text-xs [&_pre]:shadow-lg",
+                  "prose prose-sm max-w-none dark:prose-invert break-words",
+                  "[&_p]:leading-relaxed [&_p]:my-1 [&_p]:[overflow-wrap:anywhere]",
+                  "[&_pre]:rounded-xl [&_pre]:bg-zinc-100 dark:[&_pre]:bg-zinc-900 [&_pre]:text-zinc-900 dark:[&_pre]:text-zinc-100 [&_pre]:p-4 [&_pre]:text-xs [&_pre]:shadow-lg [&_pre]:overflow-x-auto",
                   "[&_code:not(pre_code)]:rounded [&_code:not(pre_code)]:bg-muted [&_code:not(pre_code)]:px-1.5 [&_code:not(pre_code)]:py-0.5 [&_code:not(pre_code)]:text-xs [&_code:not(pre_code)]:font-mono",
                   "[&_blockquote]:border-l-primary [&_blockquote]:text-muted-foreground",
                   "[&_table]:text-xs [&_th]:bg-muted",

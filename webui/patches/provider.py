@@ -7,6 +7,7 @@ Patch 4: CustomProvider.chat + LiteLLMProvider.chat
 """
 
 from __future__ import annotations
+import tempfile
 
 
 def apply() -> None:
@@ -174,12 +175,38 @@ def apply() -> None:
         )
 
     def _make_patched_chat(original_chat):
+        from loguru import logger as _logger
+        import os
+        import datetime
+
+        _debug_log_flag = os.getenv("NANOBOT_DEBUG_LLM")  # e.g. /tmp/llm_debug.log
+        _debug_log_path = os.path.join(tempfile.gettempdir(), "nanobot_llm_debug.log")
+
+        def _write_debug_log(api_base: str, messages, tools) -> None:
+            """Write LLM request payload to a dedicated debug log file, one JSON line per call."""
+            if not _debug_log_flag:
+                return
+            try:
+                entry = {
+                    "ts": datetime.datetime.now().isoformat(timespec="seconds"),
+                    "api_base": api_base,
+                    "messages": messages,
+                    "tools": tools,
+                }
+                line = json.dumps(entry, ensure_ascii=False, default=str)
+                with open(_debug_log_path, "a", encoding="utf-8") as f:
+                    f.write(line + "\n")
+                _logger.debug("LLM request written to {}, len={}", _debug_log_path, len(line))
+            except Exception as exc:
+                _logger.warning("Failed to write LLM debug log: {}", exc)
+
         async def _patched_chat(self, messages, tools=None, model=None,
                                 max_tokens=4096, temperature=0.7, reasoning_effort=None):
             # Fast path: already confirmed this base needs Responses API.
             if self.api_base in _responses_api_bases:
                 return await _call_responses_api(self, messages, tools, model, max_tokens, temperature)
 
+            _write_debug_log(self.api_base, messages, tools)
             result: LLMResponse = await original_chat(
                 self, messages, tools, model, max_tokens, temperature, reasoning_effort
             )

@@ -145,7 +145,7 @@ export function ChatWindow() {
 
   return (
     <div className="flex flex-1 min-h-0 flex-col">
-      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-6">
         {messages.length === 0 ? (
           <div className="flex h-full min-h-[300px] flex-col items-center justify-center gap-5">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/15 shadow-inner">

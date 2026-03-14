@@ -140,6 +140,8 @@ function ProvidersTab() {
     const d = drafts[prov.name] ?? {};
     const apiKey = d.api_key ?? prov.api_key_masked;
     const apiBase = d.api_base ?? (prov.api_base ?? "");
+    // 若用户未填写 api_base，自动使用该 provider 的默认 URL（即 placeholder 值）
+    const resolvedApiBase = apiBase || getProviderDefaultBaseUrl(prov.name);
     const headersStr = d.extra_headers;
     let extra_headers: Record<string, string> | undefined;
     if (headersStr !== undefined && headersStr.trim()) {
@@ -153,7 +155,7 @@ function ProvidersTab() {
     update.mutate({
       name: prov.name,
       api_key: isMasked(apiKey) ? undefined : apiKey || undefined,
-      api_base: apiBase || undefined,
+      api_base: resolvedApiBase || undefined,
       extra_headers,
       // [AI:START] tool=copilot date=2026-03-12 author=chenweikang
       models,
