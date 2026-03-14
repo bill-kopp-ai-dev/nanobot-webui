@@ -140,7 +140,7 @@ docker build -t nanobot-webui .
 docker run -d \
   --name nanobot-webui \
   -p 18780:18780 \
-  -v ~/.nanobot-webui:/root/.nanobot \
+  -v ~/.nanobot:/root/.nanobot \
   --restart unless-stopped \
   nanobot-webui
 ```

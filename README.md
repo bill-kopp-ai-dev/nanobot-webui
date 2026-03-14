@@ -105,7 +105,7 @@ services:
     image: kangkang223/nanobot-webui:latest
     container_name: nanobot-webui
     volumes:
-      - ~/.nanobot-webui:/root/.nanobot   # config & data persistence
+      - ~/.nanobot:/root/.nanobot   # config & data persistence
     ports:
       - "18780:18780"    # WebUI
       - "18790:18790"  # nanobot gateway (optional, for IM channel webhooks)
