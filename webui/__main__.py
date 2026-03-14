@@ -12,7 +12,19 @@ from pathlib import Path
 
 from webui.patches import apply_all as _apply_all_patches
 
-_apply_all_patches()
+_patches_applied = False
+
+
+def _apply_patches() -> None:
+    """Apply all patches (idempotent — safe to call multiple times)."""
+    global _patches_applied
+    if _patches_applied:
+        return
+    _patches_applied = True
+    _apply_all_patches()
+
+
+_apply_patches()
 
 
 
