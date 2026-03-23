@@ -83,7 +83,6 @@ def _make_provider(config):
 
 async def main(
     web_port: int = 18780,
-    gateway_port: int | None = None,
     web_host: str = "0.0.0.0",
     workspace: str | None = None,
     log_level: str = "DEBUG",
@@ -111,8 +110,6 @@ async def main(
     config = load_config()
     if workspace:
         config.agents.defaults.workspace = workspace
-    if gateway_port is not None:
-        config.gateway.port = gateway_port
     sync_workspace_templates(config.workspace_path)
 
     bus = MessageBus()
@@ -280,8 +277,6 @@ def main_cli() -> None:
         description="nanobot WebUI — start WebUI + gateway in one process",
     )
     parser.add_argument("--port", type=int, default=18780, help="WebUI port (default: 18780)")
-    parser.add_argument("--gateway-port", type=int, default=None, dest="gateway_port",
-                        help="nanobot gateway port (default: from config)")
     parser.add_argument("--host", default="0.0.0.0", help="Bind address (default: 0.0.0.0)")
     parser.add_argument("--workspace", default=None, help="Override workspace directory")
     parser.add_argument("--config", default=None, dest="config_path",
@@ -297,11 +292,9 @@ def main_cli() -> None:
         from webui.cli import _start_daemon
         _start_daemon(
             port=args.port,
-            gateway_port=args.gateway_port,
             host=args.host,
             workspace=args.workspace,
             config_path=args.config_path,
-            no_gateway=False,
         )
         return
 
@@ -311,7 +304,6 @@ def main_cli() -> None:
 
     asyncio.run(main(
         web_port=args.port,
-        gateway_port=args.gateway_port,
         web_host=args.host,
         workspace=args.workspace,
         log_level=args.log_level,

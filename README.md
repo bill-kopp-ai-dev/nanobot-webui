@@ -169,7 +169,7 @@ WeChat (微信) is supported via [iLink](https://ilink.dev) (requires an active 
 
 1. **Log in (choose one)**
    - **WebUI:** Open the **Channels** page → WeChat card → click **QR Login**
-   - **CLI (headless servers):** Run `nanobot weixin login` to print the QR code in the terminal
+   - **CLI (headless servers):** Run `nanobot channels login weixin` to print the QR code in the terminal
 2. **Enable** — The WebUI updates `~/.nanobot/config.json` automatically after login.
 
 > **Note:** Only one WeChat account can be bound at a time. Scanning a new QR code will replace the previous binding.
@@ -188,11 +188,9 @@ Usage: nanobot webui [OPTIONS] [COMMAND]
 
 Options:
   -p, --port INTEGER        WebUI HTTP port  (default: 18780)
-  -g, --gateway-port INT    nanobot gateway port  (default: from config)
       --host TEXT           Bind address  (default: 0.0.0.0)
   -w, --workspace PATH      Override workspace directory
   -c, --config PATH         Path to config file
-      --no-gateway          Start WebUI only; skip nanobot gateway/agent
   -d, --daemon              Run in background; return immediately
 ```
 
@@ -201,7 +199,6 @@ nanobot webui                          # foreground (WebUI + gateway)
 nanobot webui --port 9090              # custom port
 nanobot webui --daemon                 # background daemon
 nanobot webui --daemon --port 9090     # background + custom port
-nanobot webui --no-gateway             # WebUI only (gateway running elsewhere)
 nanobot webui --workspace ~/myproject  # override workspace
 ```
 
@@ -223,15 +220,18 @@ nanobot webui logs -f -n 100    # stream, show last 100 lines
 
 > Log file: `~/.nanobot/webui.log`
 
-### `nanobot weixin login` — Log in to WeChat via QR code
+### `nanobot channels login` — Log in to a channel via QR code
 
 ```bash
-nanobot weixin login
+nanobot channels login weixin          # WeChat QR code login
+nanobot channels login weixin --force  # Force re-authentication (clear saved credentials)
 ```
 
 Prints an ASCII QR code in the terminal. Scan it with the WeChat mobile app to authenticate. On success, saves the bot token to `~/.nanobot/weixin/account.json`.
 
 > Use this on headless servers where a browser is not available. The WebUI Channels page provides the same login flow with a graphical QR code.
+>
+> Backward compatible: `nanobot weixin login` still works as an alias for `nanobot channels login weixin`.
 
 ---
 

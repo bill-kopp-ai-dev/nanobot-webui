@@ -355,13 +355,34 @@ async def put_s3_config(
 async def upload_to_s3(
     file: Annotated[UploadFile, File()],
     _admin: Annotated[dict, Depends(require_admin)],
+    svc: Annotated[ServiceContainer, Depends(get_services)],
 ) -> dict:
-    """Upload a file to the configured S3/OSS bucket and return its public URL."""
+    """Upload a file to the configured S3/OSS bucket and return its public URL.
+
+    Falls back to local workspace storage (uploads/{username}/) when S3 is not
+    enabled or the bucket is not configured.
+    """
     cfg = _load_s3()
-    if not cfg.get("enabled"):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "S3 storage is not enabled")
-    if not cfg.get("bucket"):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "S3 bucket is not configured")
+    data = await file.read()
+    original_name = file.filename or "upload"
+    safe_name = Path(original_name).name
+    uid = uuid.uuid4().hex[:8]
+    today = datetime.date.today().strftime("%Y-%m")
+
+    use_s3 = cfg.get("enabled") and cfg.get("bucket")
+
+    if not use_s3:
+        # Fall back: save to workspace/uploads/{username}/
+        username: str = _admin.get("username", "default")
+        safe_username = Path(username).name
+        workspace = Path(svc.config.agents.defaults.workspace).expanduser()
+        upload_dir = workspace / "uploads" / safe_username
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        dest_filename = f"{uid}_{safe_name}"
+        dest_path = upload_dir / dest_filename
+        dest_path.write_bytes(data)
+        key = f"uploads/{safe_username}/{dest_filename}"
+        return {"url": str(dest_path), "key": key, "filename": safe_name, "local_path": str(dest_path)}
 
     try:
         import boto3
@@ -381,11 +402,6 @@ async def upload_to_s3(
         region_name=cfg.get("region") or None,
     )
 
-    data = await file.read()
-    original_name = file.filename or "upload"
-    safe_name = Path(original_name).name
-    uid = uuid.uuid4().hex[:8]
-    today = datetime.date.today().strftime("%Y-%m")
     key = f"uploads/{today}/{uid}_{safe_name}"
 
     content_type = (

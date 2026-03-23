@@ -167,7 +167,7 @@ make release-dated  # 构建并推送 :YYYY-MM-DD + :latest（多架构）
 
 1. **扫码登录（二选一）**
    - **WebUI：** 进入 **通道** 页面 → 微信卡片 → 点击 **扫码登录**
-   - **命令行（无界面服务器）：** 运行 `nanobot weixin login`，在终端打印二维码后扫码
+   - **命令行（无界面服务器）：** 运行 `nanobot channels login weixin`，在终端打印二维码后扫码
 2. **启用通道** — 登录后 WebUI 会自动更新 `~/.nanobot/config.json`。
 
 > **注意：** 微信目前仅支持绑定一个账号，再次扫码会覆盖之前的绑定。
@@ -186,11 +186,9 @@ make release-dated  # 构建并推送 :YYYY-MM-DD + :latest（多架构）
 
 选项:
   -p, --port INTEGER        WebUI 端口（默认: 18780）
-  -g, --gateway-port INT    nanobot 网关端口（默认: 读取配置文件）
       --host TEXT           绑定地址（默认: 0.0.0.0）
   -w, --workspace PATH      覆盖工作区目录
   -c, --config PATH         指定配置文件路径
-      --no-gateway          仅启动 WebUI，不启动 nanobot 网关/Agent
   -d, --daemon              后台运行，立即返回
 ```
 
@@ -199,7 +197,6 @@ nanobot webui                          # 前台启动（WebUI + 网关）
 nanobot webui --port 9090              # 自定义端口
 nanobot webui --daemon                 # 后台运行
 nanobot webui --daemon --port 9090     # 后台 + 自定义端口
-nanobot webui --no-gateway             # 仅启动 WebUI（网关另行启动）
 nanobot webui --workspace ~/myproject  # 指定工作区
 ```
 
@@ -221,15 +218,18 @@ nanobot webui logs -f -n 100    # 实时跟踪，显示最近 100 行
 
 > 日志文件位于 `~/.nanobot/webui.log`
 
-### `nanobot weixin login` — 微信扫码登录
+### `nanobot channels login` — 通道扫码登录
 
 ```bash
-nanobot weixin login
+nanobot channels login weixin          # 微信扫码登录
+nanobot channels login weixin --force  # 强制重新登录（清除已保存的凭证）
 ```
 
 在终端打印 ASCII 二维码，用手机微信扫描完成登录。登录成功后将 Bot Token 保存到 `~/.nanobot/weixin/account.json`。
 
 > 适用于无界面服务器场景。WebUI 通道页面提供相同的登录流程，并显示图形二维码。
+>
+> 向后兼容：`nanobot weixin login` 仍可使用，等同于 `nanobot channels login weixin`。
 
 ---
 

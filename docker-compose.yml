@@ -7,5 +7,4 @@ services:
       - ~/.nanobot:/root/.nanobot
     ports:
       - "18780:18780"
-      - "18790:18790"
     restart: unless-stopped

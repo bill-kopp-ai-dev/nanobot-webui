@@ -21,4 +21,4 @@ ENV VERSION=0.2.3
 RUN uv pip install --system --no-cache nanobot-webui==${VERSION}
 
 EXPOSE 18780
-CMD ["python", "-m", "webui", "--port", "18780"]
+CMD ["python3", "nanobot", "webui", "--port", "18780"]
