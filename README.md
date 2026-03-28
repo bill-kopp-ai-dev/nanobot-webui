@@ -85,13 +85,13 @@ After installation, use the `nanobot` command to start the WebUI:
 
 ```bash
 # Foreground (WebUI + gateway combined)
-nanobot webui
+nanobot webui start
 
 # Custom port
-nanobot webui --port 9090
+nanobot webui start --port 9090
 
 # Background daemon (recommended for long-running deployments)
-nanobot webui --daemon
+nanobot webui start -d
 ```
 
 Open **http://localhost:18780** — default credentials: **admin / nanobot** — change on first login.
@@ -199,27 +199,49 @@ WeChat (微信) is supported via [iLink](https://ilink.dev) (requires an active 
 
 ## CLI Reference
 
-Installing `nanobot-webui` extends the `nanobot` command with the following subcommands:
+Installing `nanobot-webui` extends the `nanobot` command with the following sub-commands (`nanobot webui --help` lists them all):
 
-### `nanobot webui` — Start the WebUI
+### `nanobot webui start` — Start the WebUI
 
 ```
-Usage: nanobot webui [OPTIONS] [COMMAND]
+Usage: nanobot webui start [OPTIONS]
 
 Options:
-  -p, --port INTEGER        WebUI HTTP port  (default: 18780)
-      --host TEXT           Bind address  (default: 0.0.0.0)
+  -p, --port INTEGER        HTTP port  [default: 18780]
+      --host TEXT           Bind address  [default: 0.0.0.0]
   -w, --workspace PATH      Override workspace directory
   -c, --config PATH         Path to config file
-  -d, --daemon              Run in background; return immediately
+  -d, --daemon              Run in background (daemon mode)
+  -l, --log-level TEXT      DEBUG / INFO / WARNING / ERROR  [default: DEBUG]
 ```
 
 ```bash
-nanobot webui                          # foreground (WebUI + gateway)
-nanobot webui --port 9090              # custom port
-nanobot webui --daemon                 # background daemon
-nanobot webui --daemon --port 9090     # background + custom port
-nanobot webui --workspace ~/myproject  # override workspace
+nanobot webui start                          # foreground (Ctrl-C to stop)
+nanobot webui start --port 9090              # custom port
+nanobot webui start -d                       # background daemon
+nanobot webui start -d --port 9090           # background + custom port
+nanobot webui start --workspace ~/myproject  # override workspace
+```
+
+Open **http://localhost:18780** — default credentials: **admin / nanobot** — change on first login.
+
+### `nanobot webui stop` — Stop the background service
+
+```bash
+nanobot webui stop    # sends SIGTERM; force-kills after 6 s if needed
+```
+
+### `nanobot webui status` — Show service status
+
+```bash
+nanobot webui status  # running state, PID, URL, log path
+```
+
+### `nanobot webui restart` — Restart the background service
+
+```bash
+nanobot webui restart              # stop + start in background (reuses current port)
+nanobot webui restart --port 9090  # restart on a new port
 ```
 
 ### `nanobot webui logs` — View logs
@@ -229,7 +251,7 @@ Usage: nanobot webui logs [OPTIONS]
 
 Options:
   -f, --follow          Stream log output in real time (like tail -f)
-  -n, --lines INTEGER   Number of lines to show  (default: 50)
+  -n, --lines INTEGER   Number of lines to show  [default: 50]
 ```
 
 ```bash
@@ -250,16 +272,8 @@ nanobot channels login weixin --force  # Force re-authentication (clear saved cr
 Prints an ASCII QR code in the terminal. Scan it with the WeChat mobile app to authenticate. On success, saves the bot token to `~/.nanobot/weixin/account.json`.
 
 > Use this on headless servers where a browser is not available. The WebUI Channels page provides the same login flow with a graphical QR code.
->
-> Backward compatible: `nanobot weixin login` still works as an alias for `nanobot channels login weixin`.
 
 ---
-
-### `nanobot stop` — Stop the background service
-
-```bash
-nanobot stop    # sends SIGTERM; force-kills after 6 s if needed
-```
 
 ### `nanobot status` — Show runtime status
 

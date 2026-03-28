@@ -122,20 +122,24 @@ def status() -> None:
                 _con.print(f"{spec.label}: {_OK if p.api_key else _DIM}")
 
 
-# ── `webui` sub-app (supports `nanobot webui` and `nanobot webui logs`) ───────
+# ── `webui` sub-app ─────────────────────────────────────────────────────────────
 
 webui_app = typer.Typer(
     name="webui",
     help="Manage the nanobot WebUI.",
-    invoke_without_command=True,
-    no_args_is_help=False,
+    no_args_is_help=True,
 )
 app.add_typer(webui_app, name="webui")
 
 
-@webui_app.callback(invoke_without_command=True)
-def webui(
-    ctx: typer.Context,
+@webui_app.callback()
+def _webui_group(ctx: typer.Context) -> None:
+    """Manage the nanobot WebUI."""
+    pass
+
+
+@webui_app.command("start")
+def webui_start(
     port: int = typer.Option(18780, "--port", "-p", help="WebUI HTTP port (default: 18780)"),
     host: str = typer.Option("0.0.0.0", "--host", help="Bind address for WebUI"),
     workspace: Optional[str] = typer.Option(
@@ -153,11 +157,8 @@ def webui(
         "DEBUG", "--log-level", "-l",
         help="Log level: DEBUG, INFO, WARNING, ERROR (default: DEBUG)",
     ),
-):
-    """Start the nanobot WebUI (and optionally the gateway) in a single process."""
-    if ctx.invoked_subcommand is not None:
-        return  # a subcommand (e.g. logs) is handling the request
-
+) -> None:
+    """Start the nanobot WebUI (foreground by default; use -d for background)."""
     if daemon:
         _start_daemon(
             port=port,
@@ -168,13 +169,12 @@ def webui(
         )
         return
 
-    # Apply webui patches before importing nanobot internals
+    # Foreground mode
     from webui.__main__ import _apply_patches, main as _run_all
     _apply_patches()
 
     if config_path:
         from nanobot.config.loader import set_config_path
-        from pathlib import Path
         set_config_path(Path(config_path).expanduser().resolve())
 
     asyncio.run(_run_all(
@@ -205,6 +205,72 @@ def webui_logs(
     else:
         import subprocess
         subprocess.run(["tail", "-n", str(lines), str(log)])
+
+
+@webui_app.command("status")
+def webui_status() -> None:
+    """Show WebUI service status."""
+    running, pid = _is_webui_running()
+    if running:
+        port_str = _port_file().read_text().strip() if _port_file().exists() else "?"
+        typer.echo(f"\u2713 running  PID={pid}  http://localhost:{port_str}")
+        typer.echo(f"  Log: {_log_file()}")
+    else:
+        typer.echo("\u2717 not running")
+
+
+@webui_app.command("stop")
+def webui_stop() -> None:
+    """Stop the background WebUI process."""
+    running, pid = _is_webui_running()
+    if not running:
+        typer.echo("nanobot WebUI is not running.")
+        raise typer.Exit(0)
+
+    import signal as _signal
+    import time
+    try:
+        os.kill(pid, _signal.SIGTERM)
+        for _ in range(30):
+            time.sleep(0.2)
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                break
+        else:
+            try:
+                os.kill(pid, _signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+    except ProcessLookupError:
+        pass
+
+    _pid_file().unlink(missing_ok=True)
+    _port_file().unlink(missing_ok=True)
+    typer.echo(f"\u2713 nanobot WebUI stopped (PID {pid})")
+
+
+@webui_app.command("restart")
+def webui_restart(
+    port: int = typer.Option(18780, "--port", "-p", help="WebUI HTTP port (default: 18780)"),
+    host: str = typer.Option("0.0.0.0", "--host", help="Bind address"),
+    workspace: Optional[str] = typer.Option(None, "--workspace", "-w", help="Override workspace directory"),
+    config_path: Optional[str] = typer.Option(None, "--config", "-c", help="Path to config file"),
+    log_level: str = typer.Option("DEBUG", "--log-level", "-l", help="Log level"),
+) -> None:
+    """Restart the background WebUI process (stop then start)."""
+    running, _ = _is_webui_running()
+    if running:
+        # Reuse the currently recorded port unless the caller specified a different one
+        if port == 18780 and _port_file().exists():
+            try:
+                port = int(_port_file().read_text().strip())
+            except ValueError:
+                pass
+        webui_stop()
+        import time
+        time.sleep(0.5)
+    _start_daemon(port=port, host=host, workspace=workspace, config_path=config_path, log_level=log_level)
 
 
 # ── Override `channels login` with PR #2348 generic behavior ─────────────────
@@ -256,62 +322,6 @@ def channels_login(
     con.print(f"[green]✓ {channel_name} login successful[/green]")
 
 
-# ── `weixin` sub-app (`nanobot weixin login`) — kept for backward compat ──────
-
-weixin_app = typer.Typer(
-    name="weixin",
-    help="Manage WeChat (微信) channel. (Alias: nanobot channels login weixin)",
-    invoke_without_command=True,
-    no_args_is_help=True,
-)
-app.add_typer(weixin_app, name="weixin")
-
-
-@weixin_app.command("login")
-def weixin_login(
-    force: bool = typer.Option(False, "--force", "-f", help="Force re-authentication"),
-) -> None:
-    """Log in to WeChat via QR code. Alias for: nanobot channels login weixin"""
-    channels_login(channel_name="weixin", force=force)
-
-
-# ── `stop` command ────────────────────────────────────────────────────────────
-
-
-@app.command("stop")
-def stop() -> None:
-    """Stop the background nanobot WebUI process."""
-    running, pid = _is_webui_running()
-    if not running:
-        typer.echo("nanobot WebUI is not running.")
-        raise typer.Exit(0)
-
-    import signal as _signal
-    try:
-        os.kill(pid, _signal.SIGTERM)
-        # Wait briefly for graceful shutdown
-        import time
-        for _ in range(30):
-            time.sleep(0.2)
-            try:
-                os.kill(pid, 0)
-            except ProcessLookupError:
-                break
-        else:
-            # Force kill if still alive after 6s
-            try:
-                os.kill(pid, _signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-    except ProcessLookupError:
-        pass
-
-    # Clean up state files
-    _pid_file().unlink(missing_ok=True)
-    _port_file().unlink(missing_ok=True)
-    typer.echo(f"\u2713 nanobot WebUI stopped (PID {pid})")
-
-
 # ── Daemon launcher ─────────────────────────────────────────────────────────
 
 def _start_daemon(
@@ -336,16 +346,16 @@ def _start_daemon(
         typer.echo("Stop it first with:  kill " + str(old_pid))
         raise typer.Exit(1)
 
-    # Build the child command — re-invoke *this* entry point without --daemon
+    # Build the child command — invoke `nanobot webui start` (foreground, no -d)
     nanobot_exe = shutil.which("nanobot") or sys.argv[0]
-    cmd: list[str] = [nanobot_exe, "webui", "--port", str(port), "--host", host]
+    cmd: list[str] = [nanobot_exe, "webui", "start", "--port", str(port), "--host", host]
     if workspace:
         cmd += ["--workspace", workspace]
     if config_path:
         cmd += ["--config", config_path]
     if log_level and log_level.upper() != "DEBUG":
         cmd += ["--log-level", log_level]
-    # Note: --daemon is intentionally omitted so the child runs in the foreground
+    # Note: -d/--daemon is intentionally omitted so the child runs in the foreground
 
     log = _log_file()
     log.parent.mkdir(parents=True, exist_ok=True)
