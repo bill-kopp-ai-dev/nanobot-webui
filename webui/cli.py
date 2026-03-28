@@ -157,6 +157,12 @@ def webui_start(
         "DEBUG", "--log-level", "-l",
         help="Log level: DEBUG, INFO, WARNING, ERROR (default: DEBUG)",
     ),
+    webui_only: bool = typer.Option(
+        False, "--webui-only",
+        help="Start only the WebUI HTTP server and agent (for WebSocket chat). "
+             "IM channels and heartbeat are NOT started — use this when nanobot "
+             "is already running as a separate process (e.g. systemd service).",
+    ),
 ) -> None:
     """Start the nanobot WebUI (foreground by default; use -d for background)."""
     if daemon:
@@ -166,6 +172,7 @@ def webui_start(
             workspace=workspace,
             config_path=config_path,
             log_level=log_level,
+            webui_only=webui_only,
         )
         return
 
@@ -182,6 +189,7 @@ def webui_start(
         web_host=host,
         workspace=workspace,
         log_level=log_level,
+        webui_only=webui_only,
     ))
 
 
@@ -330,6 +338,7 @@ def _start_daemon(
     workspace: Optional[str],
     config_path: Optional[str],
     log_level: str = "DEBUG",
+    webui_only: bool = False,
 ) -> None:
     """Spawn a detached nanobot-webui process and record its PID."""
     import shutil
@@ -355,6 +364,8 @@ def _start_daemon(
         cmd += ["--config", config_path]
     if log_level and log_level.upper() != "DEBUG":
         cmd += ["--log-level", log_level]
+    if webui_only:
+        cmd += ["--webui-only"]
     # Note: -d/--daemon is intentionally omitted so the child runs in the foreground
 
     log = _log_file()

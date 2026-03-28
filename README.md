@@ -212,16 +212,19 @@ Options:
   -w, --workspace PATH      Override workspace directory
   -c, --config PATH         Path to config file
   -d, --daemon              Run in background (daemon mode)
-  -l, --log-level TEXT      DEBUG / INFO / WARNING / ERROR  [default: DEBUG]
-```
+  -l, --log-level TEXT      DEBUG / INFO / WARNING / ERROR  [default: DEBUG]      --webui-only          Start only the WebUI HTTP server and agent (for WebSocket
+                            chat). IM channels and heartbeat are NOT started. Use this
+                            when nanobot is already managed by an external process
+                            (e.g. systemd) to avoid two processes competing for the
+                            same IM channel connections.```
 
 ```bash
 nanobot webui start                          # foreground (Ctrl-C to stop)
 nanobot webui start --port 9090              # custom port
 nanobot webui start -d                       # background daemon
 nanobot webui start -d --port 9090           # background + custom port
-nanobot webui start --workspace ~/myproject  # override workspace
-```
+nanobot webui start --workspace ~/myproject  # override workspacenanobot webui start --webui-only             # WebUI only; nanobot managed externally
+nanobot webui start -d --webui-only          # Background + WebUI-only mode```
 
 Open **http://localhost:18780** — default credentials: **admin / nanobot** — change on first login.
 

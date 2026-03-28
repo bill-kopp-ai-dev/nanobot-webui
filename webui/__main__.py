@@ -40,6 +40,7 @@ async def main(
     web_host: str = "0.0.0.0",
     workspace: str | None = None,
     log_level: str = "DEBUG",
+    webui_only: bool = False,
 ) -> None:
     import sys as _sys
     from loguru import logger
@@ -209,25 +210,39 @@ async def main(
     else:
         logger.warning("No IM channels enabled")
 
+    if webui_only:
+        logger.info(
+            "WebUI-only mode: IM channels / heartbeat will NOT be started. "
+            "An external nanobot process is expected to handle IM traffic."
+        )
+
     logger.info("Starting nanobot webui on http://{}:{}", web_host, web_port)
 
     async def run() -> None:
         try:
             await cron.start()
-            await heartbeat.start()
-            await asyncio.gather(
-                agent.run(),
-                channels.start_all(),
-                start_api_server(container, host=web_host, port=web_port),
-            )
+            if webui_only:
+                await asyncio.gather(
+                    agent.run(),
+                    start_api_server(container, host=web_host, port=web_port),
+                )
+            else:
+                await heartbeat.start()
+                await asyncio.gather(
+                    agent.run(),
+                    channels.start_all(),
+                    start_api_server(container, host=web_host, port=web_port),
+                )
         except KeyboardInterrupt:
             logger.info("Shutting down…")
         finally:
             await agent.close_mcp()
-            heartbeat.stop()
+            if not webui_only:
+                heartbeat.stop()
             cron.stop()
             agent.stop()
-            await channels.stop_all()
+            if not webui_only:
+                await channels.stop_all()
 
     await run()
 

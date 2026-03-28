@@ -211,6 +211,9 @@ make release-dated  # 构建并推送 :YYYY-MM-DD + :latest（多架构）
   -c, --config PATH         指定配置文件路径
   -d, --daemon              后台运行（Daemon 模式）
   -l, --log-level TEXT      日志级别: DEBUG / INFO / WARNING / ERROR（默认: DEBUG）
+      --webui-only          仅启动 WebUI HTTP 服务和 Agent（供 WebSocket 聊天使用），
+                            不启动 IM 通道和心跳服务。适用于 nanobot 已通过 systemd
+                            等方式独立运行的场景，避免两个进程争抢同一 IM 通道连接。
 ```
 
 ```bash
@@ -219,6 +222,8 @@ nanobot webui start --port 9090              # 自定义端口
 nanobot webui start -d                       # 后台启动（推荐长期运行）
 nanobot webui start -d --port 9090           # 后台 + 自定义端口
 nanobot webui start --workspace ~/myproject  # 指定工作区
+nanobot webui start --webui-only             # 仅 WebUI，nanobot 由系统服务管理
+nanobot webui start -d --webui-only          # 后台 + 仅 WebUI 模式
 ```
 
 浏览器访问 **http://localhost:18780** — 默认账号：**admin / nanobot**，首次登录后请立即修改密码。
