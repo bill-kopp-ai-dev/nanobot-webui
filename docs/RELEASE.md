@@ -1,5 +1,26 @@
 # Release Notes
 
+## v0.2.7 — 2026-04-09
+
+**Upgrade to `nanobot-ai v0.1.5`**
+- Bump hard dependency to `nanobot-ai==0.1.5`
+- Updated `AgentLoop` initialization to use the new `web_config` parameter (replacing `web_search_config` + `web_proxy` in 0.1.4)
+- Rewrote `patches/provider.py` to align with the new `OpenAICompatProvider` API (`find_by_name` import path updated)
+- Added `execSandbox` field handling in the Settings UI (`AgentTab`) to expose the new exec sandbox toggle introduced in 0.1.5
+- `reload_provider()` now syncs `agent.subagents.model` alongside all provider references, matching 0.1.5's `SubagentManager` interface
+
+**Message Revoke Enhancement**
+- Revoke now deletes the target message **and all subsequent messages**, allowing a clean re-run from any point in the conversation
+- Added inline confirmation UI — clicking the revoke icon shows an inline "撤回? ✓ ✕" prompt directly on the message bubble, preventing accidental deletion
+- Fully localized revoke confirmation and toast notifications across all 9 supported languages
+
+**Provider Config Hot-Reload**
+- Fixed a bug where updating the LLM provider configuration required a full restart to take effect
+- `reload_provider()` now syncs all internal references: `agent.runner`, `agent.subagents.provider/runner`, `agent.dream.provider/_runner`, and `heartbeat.provider`
+- Tools (`ExecTool`, `WebSearchTool`) are automatically re-registered on config change, picking up updated `exec_config`, `web_config`, and `restrict_to_workspace` values without restart
+
+---
+
 ## v0.2.6 — 2026-03-29
 
 **System Logs Viewer**
