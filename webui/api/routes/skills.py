@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from webui.api.deps import get_services, get_current_user, require_admin
 from webui.api.gateway import ServiceContainer
@@ -118,7 +118,7 @@ async def update_skill(
     return SkillContent(name=name, source="workspace", content=body.content)
 
 
-@router.delete("/{name}", status_code=204)
+@router.delete("/{name}", status_code=204, response_model=None, response_class=Response)
 async def delete_skill(
     name: str,
     _admin: Annotated[dict, Depends(require_admin)],

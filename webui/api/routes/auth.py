@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from webui.api.auth import create_access_token, verify_password
 from webui.api.deps import get_current_user, get_user_store
@@ -50,7 +50,7 @@ async def me(current_user: Annotated[dict, Depends(get_current_user)]) -> UserIn
     )
 
 
-@router.put("/password", status_code=204)
+@router.put("/password", status_code=204, response_model=None, response_class=Response)
 async def change_password(
     body: ChangePasswordRequest,
     current_user: Annotated[dict, Depends(get_current_user)],

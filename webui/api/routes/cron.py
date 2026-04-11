@@ -6,7 +6,7 @@ import time
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from webui.api.deps import get_services, require_admin
 from webui.api.gateway import ServiceContainer
@@ -168,7 +168,7 @@ async def update_job(
     return _to_info(job)
 
 
-@router.delete("/jobs/{job_id}", status_code=204)
+@router.delete("/jobs/{job_id}", status_code=204, response_model=None, response_class=Response)
 async def delete_job(
     job_id: str,
     _admin: Annotated[dict, Depends(require_admin)],

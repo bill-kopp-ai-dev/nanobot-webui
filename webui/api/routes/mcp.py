@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from webui.api.deps import get_services, require_admin
 from webui.api.gateway import ServiceContainer
@@ -143,7 +143,7 @@ async def update_mcp_server(
     return _to_info(name, cfg)
 
 
-@router.delete("/servers/{name}", status_code=204)
+@router.delete("/servers/{name}", status_code=204, response_model=None, response_class=Response)
 async def delete_mcp_server(
     name: str,
     _admin: Annotated[dict, Depends(require_admin)],

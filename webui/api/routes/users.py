@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from webui.api.deps import get_user_store, require_admin
 from webui.api.models import CreateUserRequest, UserInfo
@@ -34,7 +34,7 @@ async def create_user(
     return UserInfo(**user)
 
 
-@router.delete("/{user_id}", status_code=204)
+@router.delete("/{user_id}", status_code=204, response_model=None, response_class=Response)
 async def delete_user(
     user_id: str,
     current_admin: Annotated[dict, Depends(require_admin)],

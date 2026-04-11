@@ -279,6 +279,13 @@ def main_cli() -> None:
         prog="nanobot-webui",
         description="nanobot WebUI — start WebUI + gateway in one process",
     )
+    parser.add_argument(
+        "command",
+        nargs="?",
+        default="start",
+        choices=["start"],
+        help="Compatibility alias. 'start' may be omitted.",
+    )
     parser.add_argument("--port", type=int, default=18780, help="WebUI port (default: 18780)")
     parser.add_argument("--host", default="0.0.0.0", help="Bind address (default: 0.0.0.0)")
     parser.add_argument("--workspace", default=None, help="Override workspace directory")

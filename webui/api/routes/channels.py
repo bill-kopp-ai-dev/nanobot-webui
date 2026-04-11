@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel
 
 from webui.api.deps import get_services, require_admin
@@ -221,7 +221,7 @@ async def reload_channel(
     )
 
 
-@router.post("/reload-all", status_code=204)
+@router.post("/reload-all", status_code=204, response_model=None, response_class=Response)
 async def reload_all_channels(
     _admin: Annotated[dict, Depends(require_admin)],
     svc: Annotated[ServiceContainer, Depends(get_services)],
