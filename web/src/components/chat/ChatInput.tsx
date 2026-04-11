@@ -1,12 +1,19 @@
 import { useRef, useState, useCallback, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Send, Square, Wifi, WifiOff, Paperclip, X, Loader2, ImageIcon, FileText, Terminal } from "lucide-react";
+import { Send, Square, Wifi, WifiOff, Paperclip, X, Loader2, ImageIcon, FileText, Menu, Check } from "lucide-react";
 import { nanoid } from "nanoid";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { cn } from "../../lib/utils";
 import { uploadFile } from "../../hooks/useConfig";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Attachment {
   id: string;
@@ -35,6 +42,7 @@ export function ChatInput({
   onToggleToolMessages,
 }: ChatInputProps) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -52,9 +60,9 @@ export function ChatInput({
       el.style.height = MAX_TEXTAREA_H + "px";
       el.style.overflowY = "auto";
     } else {
-      el.style.height = Math.max(contentH, 52) + "px";
+      el.style.height = Math.max(contentH, isMobile ? 48 : 52) + "px";
     }
-  }, [value]);
+  }, [value, isMobile]);
 
   const handleFilesSelected = useCallback(async (files: File[]) => {
     for (const file of files) {
@@ -85,7 +93,7 @@ export function ChatInput({
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !isMobile) {
       e.preventDefault();
       handleSend();
     }
@@ -110,10 +118,10 @@ export function ChatInput({
     setValue("");
     setAttachments([]);
     if (textareaRef.current) {
-      textareaRef.current.style.height = "52px";
+      textareaRef.current.style.height = isMobile ? "48px" : "52px";
       textareaRef.current.style.overflowY = "hidden";
     }
-  }, [value, attachments, disabled, isUploading, onSend]);
+  }, [value, attachments, disabled, isUploading, onSend, isMobile]);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
@@ -172,45 +180,59 @@ export function ChatInput({
             onChange={handleInput}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={t("chat.placeholder")}
+            placeholder={isMobile ? t("chat.placeholder").replace(/\s*\(.*\)/, "") : t("chat.placeholder")}
             rows={1}
-            className="resize-none border-0 bg-transparent px-4 py-3.5 shadow-none focus-visible:ring-0 text-base leading-relaxed w-full"
+            className={cn("resize-none border-0 bg-transparent px-4 shadow-none focus-visible:ring-0 text-base w-full overflow-hidden", isMobile ? "py-3 leading-snug" : "py-3.5 leading-relaxed")}
             disabled={!isWaiting && disabled}
           />
-          <div className="flex items-center justify-between px-3 pb-2">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {isConnected ? (
-                <Wifi className="h-3 w-3 text-green-500" />
-              ) : (
-                <WifiOff className="h-3 w-3 text-destructive" />
-              )}
-              <span>{isConnected ? t("chat.connected") : t("chat.disconnected")}</span>
-
+          <div className={cn("flex items-end justify-between px-3", isMobile ? "pb-3" : "pb-2")}>
+            <div className={cn("flex items-center gap-1 text-xs text-muted-foreground", isMobile && "h-8")}>
               {/* File upload button */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 ml-1"
+                className={cn("text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted transition-colors rounded-xl", isMobile ? "h-8 w-8" : "h-7 w-7")}
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isWaiting}
                 title={t("chat.uploadAttachment")}
               >
-                <Paperclip className="h-3.5 w-3.5" />
+                <Paperclip className={isMobile ? "h-4 w-4" : "h-3.5 w-3.5"} />
               </Button>
-              {/* Toggle tool messages */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`h-6 w-6 transition-colors ${
-                  showToolMessages
-                    ? "text-primary"
-                    : "text-muted-foreground/40 hover:text-muted-foreground"
-                }`}
-                onClick={onToggleToolMessages}
-                title={showToolMessages ? t("chat.hideToolMessages") : t("chat.showToolMessages")}
+              {/* Extra settings menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted transition-colors rounded-xl", isMobile ? "h-8 w-8" : "h-7 w-7")}
+                  >
+                    <Menu className={isMobile ? "h-4 w-4" : "h-3.5 w-3.5"} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-[160px]">
+                  <DropdownMenuItem onClick={onToggleToolMessages} className="justify-between cursor-pointer">
+                    {showToolMessages ? t("chat.hideToolMessages") : t("chat.showToolMessages")}
+                    {showToolMessages && <Check className="h-3.5 w-3.5 ml-2 text-primary" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Separator */}
+              <div className="mx-1 h-3.5 w-[1px] bg-border/70" />
+
+              {/* Status Indicator */}
+              <div
+                className="flex items-center justify-center gap-1.5 px-1 ml-0.5"
+                title={isConnected ? t("chat.connected") : t("chat.disconnected")}
               >
-                <Terminal className="h-3.5 w-3.5" />
-              </Button>
+                {isConnected ? (
+                  <Wifi className="h-3.5 w-3.5 text-green-500" />
+                ) : (
+                  <WifiOff className="h-3.5 w-3.5 text-destructive" />
+                )}
+                {!isMobile && <span>{isConnected ? t("chat.connected") : t("chat.disconnected")}</span>}
+              </div>
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -223,28 +245,25 @@ export function ChatInput({
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {isWaiting ? "" : t("chat.hint")}
-              </span>
               {isWaiting ? (
                 <Button
-                  size="sm"
+                  size={isMobile ? "icon" : "sm"}
                   variant="destructive"
                   onClick={onStop}
-                  className="h-8 gap-1.5 rounded-xl px-3"
+                  className={cn("h-8 gap-1.5 rounded-xl shrink-0 transition-opacity", !isMobile && "px-3")}
                 >
                   <Square className="h-3.5 w-3.5" />
-                  {t("chat.stop")}
+                  {!isMobile && t("chat.stop")}
                 </Button>
               ) : (
                 <Button
-                  size="sm"
+                  size={isMobile ? "icon" : "sm"}
                   onClick={handleSend}
                   disabled={!canSend || disabled}
-                  className="h-8 gap-1.5 rounded-xl px-3"
+                  className={cn("h-8 gap-1.5 rounded-xl shrink-0 transition-opacity", !isMobile && "px-3", isMobile && !canSend && "opacity-60")}
                 >
-                  <Send className="h-3.5 w-3.5" />
-                  {t("chat.send")}
+                  <Send className={cn("h-3.5 w-3.5", isMobile && "ml-0.5")} />
+                  {!isMobile && t("chat.send")}
                 </Button>
               )}
             </div>
