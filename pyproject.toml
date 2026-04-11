@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nanobot-webui"
-version = "0.2.7"
+version = "0.2.7.post1"
 description = "Web management panel for nanobot"
 readme = "README.md"
 license = "MIT"
@@ -37,6 +37,8 @@ Repository = "https://github.com/Good0007/nanobot-webui"
 
 [project.optional-dependencies]
 dev = [
+    "build",
+    "twine",
     "httpx",
     "pytest",
     "pytest-asyncio",
